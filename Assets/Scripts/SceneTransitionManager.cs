@@ -19,7 +19,7 @@ public class SceneTransitionManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    
+
     public void LoadBattleScene()
     {
         StartCoroutine(LoadBattleCoroutine());
@@ -27,15 +27,15 @@ public class SceneTransitionManager : MonoBehaviour
 
     IEnumerator LoadBattleCoroutine()
     {
-    
+
         AsyncOperation op = SceneManager.LoadSceneAsync(battleSceneName, LoadSceneMode.Single);
         op.allowSceneActivation = true;
         while (!op.isDone)
             yield return null;
 
-        
+
         YieldInstruction wait = new WaitForEndOfFrame();
-        yield return wait; 
+        yield return wait;
 
         if (PersistentPlayer.Instance != null)
         {
@@ -44,7 +44,7 @@ public class SceneTransitionManager : MonoBehaviour
             if (spawn != null)
             {
                 PersistentPlayer.Instance.transform.position = spawn.transform.position;
-               
+
                 var rb = PersistentPlayer.Instance.GetComponent<Rigidbody2D>();
                 if (rb != null) rb.linearVelocity = Vector2.zero;
             }
@@ -55,7 +55,11 @@ public class SceneTransitionManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("PersistentPlayer not found. Make sure PersistentPlayer script is on your main player.");
+
+            Debug.LogWarning("PersistentPlayer not found.");
         }
+        Debug.Log("SceneTransitionManager: Loading battle");
     }
+    
+    
 }

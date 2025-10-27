@@ -21,7 +21,6 @@ public class DialogueTrigger : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.E))
         {
-            
             if (dialogueActive)
             {
                 DialogueManager.Instance.DisplayNextSentence();
@@ -38,14 +37,15 @@ public class DialogueTrigger : MonoBehaviour
 
         if (npcName == "Wizard")
         {
-        DialogueManager.Instance.StartDialogue(npcName, dialogueLines);
-        DialogueManager.Instance.ShowContinueButton(() =>
-        {
-            Destroy(gameObject); 
-        });
-        return;
-        }
+            DialogueManager.Instance.StartDialogue(npcName, dialogueLines);
+            DialogueManager.Instance.ShowContinueButton(() =>
+            {
+                Destroy(gameObject);
+                Debug.Log("Continue pressed.. Destroy wizard");
 
+            });
+            return;
+        }
         if (isQuestGiver && !QuestManager.Instance.IsQuestAccepted())
         {
             DialogueManager.Instance.StartDialogue(
@@ -54,7 +54,7 @@ public class DialogueTrigger : MonoBehaviour
                 yesAction: () =>
                 {
                     QuestManager.Instance.SetQuestAccepted(true);
-                    dialogueActive = false; 
+                    dialogueActive = false;
                 },
                 noAction: () =>
                 {
@@ -64,29 +64,12 @@ public class DialogueTrigger : MonoBehaviour
         }
         else if (!isQuestGiver || (requiresQuestAccepted && QuestManager.Instance.IsQuestAccepted()))
         {
-            DialogueManager.Instance.StartDialogue(
-                npcName,
-                dialogueLines
-            );
-
-            if (npcName == "Wizard")
-            {
-            DialogueManager.Instance.ShowContinueButton(() =>
-            {
-            Destroy(gameObject); // dest wiz
-            });
-            }
-
-          
+            DialogueManager.Instance.StartDialogue(npcName, dialogueLines);
             Invoke(nameof(ResetDialogueState), dialogueLines.Count * 1.5f);
         }
-        
     }
 
-    void ResetDialogueState()
-    {
-        dialogueActive = false;
-    }
+    void ResetDialogueState() => dialogueActive = false;
 
     void OnTriggerEnter2D(Collider2D other)
     {
@@ -99,46 +82,34 @@ public class DialogueTrigger : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerInRange = false;
-            dialogueActive = false; 
+            dialogueActive = false;
             DialogueManager.Instance.EndDialogue();
         }
     }
-   
+
     public void OnYesButtonClicked()
     {
-    
-    if (QuestManager.Instance != null)
-    {
-        QuestManager.Instance.SetQuestAccepted(true);
-    }
-    else
-    {
-        Debug.LogWarning("QuestManager.Instance is null when accepting quest.");
-    }
+        if (QuestManager.Instance != null)
+            QuestManager.Instance.SetQuestAccepted(true);
 
-    
-    if (DialogueManager.Instance != null)
-    {
-        DialogueManager.Instance.EndDialogue();
-    }
+        if (DialogueManager.Instance != null)
+            DialogueManager.Instance.EndDialogue();
 
-    
-    if (SceneTransitionManager.Instance != null)
-    {
-        SceneTransitionManager.Instance.LoadBattleScene();
-        return;
-    }
+        if (SceneTransitionManager.Instance != null)
+        {
+            SceneTransitionManager.Instance.LoadBattleScene();
+            return;
+        }
 
-    #if UNITY_EDITOR || true
-    try
-    {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("BattleScene");
+#if UNITY_EDITOR || true
+        try
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene("BattleScene");
+        }
+        catch (System.Exception e)
+        {
+            Debug.Log("Failed to load BattleScene. " + e);
+        }
+#endif
     }
-    catch (System.Exception e)
-    {
-        Debug.LogError("Failed to load BattleScene. Make sure it's added to Build Settings. Exception: " + e);
-    }
-    #endif
-    }
-
 }

@@ -14,31 +14,52 @@ public class DialogueManager : MonoBehaviour
     public Button yesButton;
     public Button noButton;
     public Button continueButton;
-    private System.Action onContinue;
-
 
     private Queue<string> sentences = new Queue<string>();
     private System.Action onYes;
     private System.Action onNo;
+    private System.Action onContinue;
+
     public bool IsDialogueOpen => dialoguePanel != null && dialoguePanel.activeSelf;
+
     void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
 
-        dialoguePanel.SetActive(false);
-        yesButton.gameObject.SetActive(false);
-        noButton.gameObject.SetActive(false);
-        continueButton.gameObject.SetActive(false);
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
+
+        if (yesButton != null)
+            yesButton.gameObject.SetActive(false);
+
+        if (noButton != null)
+            noButton.gameObject.SetActive(false);
+
+        if (continueButton != null)
+            continueButton.gameObject.SetActive(false);
     }
 
     public void StartDialogue(string speaker, List<string> dialogueLines, System.Action yesAction = null, System.Action noAction = null)
     {
-        dialoguePanel.SetActive(true);
-        yesButton.gameObject.SetActive(false);
-        noButton.gameObject.SetActive(false);
+        if (dialoguePanel == null) return;
 
-        speakerNameText.text = speaker;
+        dialoguePanel.SetActive(true);
+        if (yesButton != null) yesButton.gameObject.SetActive(false);
+        if (noButton != null) noButton.gameObject.SetActive(false);
+        if (continueButton != null) continueButton.gameObject.SetActive(false);
+
+        if (speakerNameText != null)
+            speakerNameText.text = speaker;
+
         sentences.Clear();
 
         foreach (string line in dialogueLines)
@@ -46,6 +67,7 @@ public class DialogueManager : MonoBehaviour
 
         onYes = yesAction;
         onNo = noAction;
+        onContinue = null;
 
         DisplayNextSentence();
     }
@@ -53,57 +75,86 @@ public class DialogueManager : MonoBehaviour
     public void DisplayNextSentence()
     {
         if (sentences.Count == 0)
-        {
-            if (onContinue != null)
-            {
-            continueButton.gameObject.SetActive(true);
-            return;
-            }
-            if (onYes != null || onNo != null)
-            {
-                yesButton.gameObject.SetActive(true);
-                noButton.gameObject.SetActive(true);
-                yesButton.onClick.RemoveAllListeners();
-                noButton.onClick.RemoveAllListeners();
+{
+    Debug.Log("Dialogue finished — checking which button to show");
 
-                yesButton.onClick.AddListener(() => { EndDialogue(); onYes?.Invoke(); });
-                noButton.onClick.AddListener(() => { EndDialogue(); onNo?.Invoke(); });
-            }
-            else
-            {
-                EndDialogue();
-            }
-            return;
-        }
+    if (onContinue != null && continueButton != null)
+    {
+        continueButton.gameObject.SetActive(true);
+
+        continueButton.onClick.RemoveAllListeners();
+
+        continueButton.onClick.AddListener(() =>
+        {
+            Debug.Log("ContinueButton UI click detected");
+            onContinue?.Invoke();
+            EndDialogue();
+        });
+        return;
+    }
+    if (onYes != null || onNo != null)
+    {
+        if (yesButton != null) yesButton.gameObject.SetActive(true);
+        if (noButton != null) noButton.gameObject.SetActive(true);
+
+        yesButton?.onClick.RemoveAllListeners();
+        noButton?.onClick.RemoveAllListeners();
+
+        yesButton?.onClick.AddListener(() =>
+        {
+            Debug.Log("Yes clicked — executing yes action");
+            EndDialogue();
+            onYes?.Invoke();
+        });
+
+        noButton?.onClick.AddListener(() =>
+        {
+            Debug.Log("No clicked - executing no action");
+            EndDialogue();
+            onNo?.Invoke();
+        });
+    }
+    else
+    {
+        EndDialogue();
+    }
+
+    return;
+}
+
 
         string sentence = sentences.Dequeue();
-        dialogueText.text = sentence;
+        if (dialogueText != null)
+            dialogueText.text = sentence;
     }
+
     public void EndDialogue()
     {
-    dialoguePanel.SetActive(false);
-    sentences.Clear();
-    yesButton.gameObject.SetActive(false);
-    noButton.gameObject.SetActive(false);
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
+
+        sentences.Clear();
+
+        if (yesButton != null) yesButton.gameObject.SetActive(false);
+        if (noButton != null) noButton.gameObject.SetActive(false);
+        if (continueButton != null) continueButton.gameObject.SetActive(false);
     }
+
     public void HideDialogue()
     {
-        dialoguePanel.SetActive(false);
-        dialogueText.text = "";
-        speakerNameText.text = "";
+        if (dialoguePanel != null)
+            dialoguePanel.SetActive(false);
+
+        if (dialogueText != null)
+            dialogueText.text = "";
+
+        if (speakerNameText != null)
+            speakerNameText.text = "";
     }
 
     public void ShowContinueButton(System.Action continueAction)
-        {
-    continueButton.gameObject.SetActive(true);
-    onContinue = continueAction;
-    continueButton.onClick.RemoveAllListeners();
-    continueButton.onClick.AddListener(() =>
     {
-        onContinue?.Invoke();
-        EndDialogue();
-        continueButton.gameObject.SetActive(false);
-    });
+        Debug.Log("ShowContinueButton called..");
+        onContinue = continueAction;
     }
-
 }
