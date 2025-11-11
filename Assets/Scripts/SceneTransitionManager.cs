@@ -19,7 +19,6 @@ public class SceneTransitionManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-
     public void LoadBattleScene()
     {
         StartCoroutine(LoadBattleCoroutine());
@@ -50,7 +49,7 @@ public class SceneTransitionManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("PlayerSpawn not found in battle scene. Player kept at current position.");
+                Debug.Log("PlayerSpawn not found");
             }
         }
         else
@@ -58,7 +57,7 @@ public class SceneTransitionManager : MonoBehaviour
 
             Debug.LogWarning("PersistentPlayer not found.");
         }
-        Debug.Log("SceneTransitionManager: Loading battle");
+        Debug.Log("Loading battle");
     }
     
     

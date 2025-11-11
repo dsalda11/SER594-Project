@@ -33,7 +33,29 @@ public class DialogueTrigger : MonoBehaviour
 
     void TriggerDialogue()
     {
+        
+
         dialogueActive = true;
+
+        if (npcName == "Squire")
+        {
+            Debug.Log("starting lines");
+
+            DialogueManager.Instance.StartDialogue(
+                npcName,
+                dialogueLines,
+                yesAction: null,
+                noAction: null,
+                finishedAction: () =>
+                {
+                    Debug.Log("finishedAction");
+                    if (DialogueManager.Instance != null && DialogueManager.Instance.IsDialogueOpen)
+                        DialogueManager.Instance.ShowClassChoice(npcName);
+                });
+
+            return;
+        }
+
 
         if (npcName == "Wizard")
         {
@@ -54,6 +76,8 @@ public class DialogueTrigger : MonoBehaviour
                 yesAction: () =>
                 {
                     QuestManager.Instance.SetQuestAccepted(true);
+                   
+
                     dialogueActive = false;
                 },
                 noAction: () =>
@@ -97,7 +121,7 @@ public class DialogueTrigger : MonoBehaviour
 
         if (SceneTransitionManager.Instance != null)
         {
-            SceneTransitionManager.Instance.LoadBattleScene();
+            // SceneTransitionManager.Instance.LoadBattleScene();
             return;
         }
 
